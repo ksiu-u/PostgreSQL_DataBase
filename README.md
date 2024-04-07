@@ -12,7 +12,7 @@
 
 Физическая модель созданной базы данных:
 
-<img src="DBeaverr.png" width="500" height="300">
+![](DBeaver.png)
 
 ## INSERT
 

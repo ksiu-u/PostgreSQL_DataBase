@@ -1,10 +1,4 @@
-/* 
-Упражнение 1
-
-Напишите SQL запрос, который вернет список городов, играющих команд, их наименования 
-и название домашней арены, вместимость которой строго больше чем 10000 мест. 
-Результат отсортируйте по названию города в убывающем порядке
-*/
+-- Упражнение 1
 
 SELECT team.city city_name, team.name team_name, arena.name arena_name
   FROM team
@@ -21,15 +15,7 @@ city_name|team_name  |arena_name                        |
 
 
 
-/* 
-Упражнение 2
-
-Напишите SQL запрос, который возвращает информацию по играм между командами с указанием имени команды хозяина, 
-имени гостевой команды, имени команды победителя, финальный счет 
-(в одном поле score с паттерном “OWNER_SCORE:GUEST_SCORE”) 
-и название стадиона, на котором проводилась игра. 
-Результат отсортируйте по имени команды хозяина и по имени гостевой команды. 
-*/
+-- Упражнение 2
 
 SELECT t1.name owner_team, t2.name guest_team, t3.name winner_team, 
        CONCAT(game.owner_score, ':', game.guest_score) score, arena.name arena_name
@@ -56,13 +42,28 @@ owner_team |guest_team |winner_team|score|arena_name                        |
   
       
 
-/* 
-Упражнение 3
- 
-Напишите SQL запрос, который возвращает имена ВСЕХ (LEFT / RIGHT JOIN) стадионов и соответствующую дату игры на стадионе. 
-Если стадион не участвовал в играх - необходимо вывести значение “игра не проводилась”. 
-Результат отсортируйте по двум столбцам. 
- */
+-- Упражнение 3
+
+  WITH arena1 AS (
+       SELECT name
+         FROM arena
+        WHERE size > 10000)
+SELECT team.city city_name, team.name team_name, arena.name arena_name
+  FROM team
+       INNER JOIN arena ON team.arena_id = arena.id 
+ WHERE arena.name IN (SELECT name FROM arena1)
+ ORDER BY city_name DESC;
+
+/*
+city_name|team_name  |arena_name                        |
+---------+-----------+----------------------------------+
+Пирей    |Олимпакос  |Пис энд Френдшип Стадиум          |
+Мадрид   |Реал Мадрид|Визинк-Центр - Паласио де Депортес|
+*/
+
+
+
+-- Упражнение 4
 
 SELECT arena.name arena_name, 
        COALESCE(CAST(game.game_date AS VARCHAR(20)), 'игра не проводилась') game_date 
@@ -88,13 +89,7 @@ arena_name                        |game_date          |
 
 
 
-/*
-Упражнение 4
-
-Напишите SQL запрос, который возвращает количество игроков, сгруппированных по классу роста игрока.
-Результат отсортируйте по классу игрока.
- */
-
+-- Упражнение 5
 
 SELECT (CASE
  	   WHEN height < 190 THEN 1
@@ -113,3 +108,73 @@ height_class|amount_players|
            2|            10|
            3|            11|
  */
+
+
+
+-- Упражнение 6
+
+SELECT name, 'стадион' AS object_type
+  FROM arena
+ UNION ALL
+SELECT name, 'команда' AS object_type
+  FROM team 
+ ORDER BY object_type DESC, name ASC;
+
+/*
+name                              |object_type|
+----------------------------------+-----------+
+Визинк-Центр - Паласио де Депортес|стадион    |
+Палау Блауграна                   |стадион    |
+Пис энд Френдшип Стадиум          |стадион    |
+СИБУР Арена                       |стадион    |
+УСК ЦСКА им. А.Я. Гомельского     |стадион    |
+Барселона                         |команда    |
+Зенит                             |команда    |
+Олимпакос                         |команда    |
+Реал Мадрид                       |команда    |
+ЦСКА                              |команда    |
+*/
+
+
+
+-- Упражнение 7
+
+SELECT name 
+  FROM arena
+ WHERE name IN (
+       SELECT arena.name
+         FROM arena
+              INNER JOIN game ON arena.id = game.arena_id)
+ ORDER BY 1;
+
+/*
+name                              |
+----------------------------------+
+Визинк-Центр - Паласио де Депортес|
+Палау Блауграна                   |
+СИБУР Арена                       |
+УСК ЦСКА им. А.Я. Гомельского     |
+ */
+
+
+
+-- Упражнение 8
+ 
+SELECT name, salary
+  FROM player 
+ ORDER BY 
+       CASE 
+       WHEN salary = 475000 THEN 0
+       WHEN salary != 475000 THEN salary
+       END      
+ LIMIT 5;
+
+/*
+name              |salary|
+------------------+------+
+Михалис Лунцис    |475000|
+Яннулис Ларенцакис| 75000|
+Билли Джеймс Бэрон| 75000|
+Гершон Ябуселе    | 99000|
+Кайл Курич        |100000|
+/
